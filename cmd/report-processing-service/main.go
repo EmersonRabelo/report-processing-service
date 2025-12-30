@@ -2,8 +2,11 @@ package main
 
 import (
 	"fmt"
+	"log"
 
-	"github.com/EmersonRabelo/report-processing-service/internal/config"
+	config "github.com/EmersonRabelo/report-processing-service/internal/config"
+	database "github.com/EmersonRabelo/report-processing-service/internal/database"
+	router "github.com/EmersonRabelo/report-processing-service/router"
 )
 
 var setting config.SettingProvider
@@ -14,10 +17,21 @@ func init() {
 	setting = config.GetSetting()
 
 	config.InitDatabase()
-
-	fmt.Println("Initialized.")
 }
 
 func main() {
-	fmt.Println("Hello Wordl!")
+	db := config.GetDB()
+	if err := database.RunMigrations(db); err != nil {
+		log.Fatal("Falha ao executar migrations:", err)
+	}
+
+	r := router.SetupRouter()
+
+	port := setting.GetServer().Port
+
+	if err := r.Run(fmt.Sprintf(":%s", port)); err != nil {
+		log.Fatal("Falha ao iniciar servidor:", err)
+	}
+
+	fmt.Println("Initialized.")
 }

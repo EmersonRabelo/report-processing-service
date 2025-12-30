@@ -6,6 +6,7 @@ import (
 
 	config "github.com/EmersonRabelo/report-processing-service/internal/config"
 	database "github.com/EmersonRabelo/report-processing-service/internal/database"
+	"github.com/EmersonRabelo/report-processing-service/internal/queue"
 	router "github.com/EmersonRabelo/report-processing-service/router"
 )
 
@@ -21,9 +22,21 @@ func init() {
 
 func main() {
 	db := config.GetDB()
+
 	if err := database.RunMigrations(db); err != nil {
 		log.Fatal("Falha ao executar migrations:", err)
 	}
+
+	conn, channel := config.InitBroker()
+
+	defer channel.Close()
+	defer conn.Close()
+
+	exchange := "topic_report"
+	routingKey := "post.report.created"
+	consumer := queue.NewReportConsumer(channel, exchange, routingKey)
+
+	consumer.Consumer()
 
 	r := router.SetupRouter()
 

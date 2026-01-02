@@ -6,7 +6,10 @@ import (
 
 	config "github.com/EmersonRabelo/report-processing-service/internal/config"
 	database "github.com/EmersonRabelo/report-processing-service/internal/database"
-	"github.com/EmersonRabelo/report-processing-service/internal/queue"
+	"github.com/EmersonRabelo/report-processing-service/internal/handler"
+	consumer "github.com/EmersonRabelo/report-processing-service/internal/queue/consumer"
+	"github.com/EmersonRabelo/report-processing-service/internal/repository"
+	"github.com/EmersonRabelo/report-processing-service/internal/service"
 	router "github.com/EmersonRabelo/report-processing-service/router"
 )
 
@@ -34,9 +37,17 @@ func main() {
 
 	exchange := "topic_report"
 	routingKey := "post.report.created"
-	consumer := queue.NewReportConsumer(channel, exchange, routingKey)
+	queueName := "q.report.created"
 
-	consumer.Consumer()
+	repo := repository.NewReportRepository(db)
+	svc := service.NewConsumerReportService(repo)
+	handler := handler.NewReportHandler(svc)
+
+	consumer := consumer.NewReportConsumer(channel, exchange, routingKey, queueName, handler)
+
+	if err := consumer.Start(); err != nil {
+		log.Fatal(err)
+	}
 
 	r := router.SetupRouter()
 

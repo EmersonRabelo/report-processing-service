@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/EmersonRabelo/report-processing-service/internal/api/perspective"
 	config "github.com/EmersonRabelo/report-processing-service/internal/config"
 	database "github.com/EmersonRabelo/report-processing-service/internal/database"
 	"github.com/EmersonRabelo/report-processing-service/internal/handler"
@@ -39,8 +40,14 @@ func main() {
 	routingKey := "post.report.created"
 	queueName := "q.report.created"
 
+	perspectiveClientConfig := setting.GetPerspectiveClient()
+	apiToken := perspectiveClientConfig.TOKEN
+	apiBaseURL := perspectiveClientConfig.URL
+	apiURL := fmt.Sprintf("%s?key=%s", apiBaseURL, apiToken)
+	perspectiveAPIClient := perspective.NewPerspectiveAPIClient(apiURL)
+
 	repo := repository.NewReportRepository(db)
-	svc := service.NewConsumerReportService(repo)
+	svc := service.NewConsumerReportService(repo, perspectiveAPIClient)
 	handler := handler.NewReportHandler(svc)
 
 	consumer := consumer.NewReportConsumer(channel, exchange, routingKey, queueName, handler)

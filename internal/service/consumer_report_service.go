@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/EmersonRabelo/report-processing-service/internal/api/perspective"
 	contracts "github.com/EmersonRabelo/report-processing-service/internal/dto/report/contracts"
 	"github.com/EmersonRabelo/report-processing-service/internal/entity"
 	"github.com/google/uuid"
@@ -17,12 +18,14 @@ type ReportRepository interface {
 }
 
 type ConsumerReportService struct {
-	repository ReportRepository
+	repository  ReportRepository
+	perspective perspective.PerspectiveAPIClient
 }
 
-func NewConsumerReportService(repository ReportRepository) *ConsumerReportService {
+func NewConsumerReportService(repository ReportRepository, perspectiveAPIClient perspective.PerspectiveAPIClient) *ConsumerReportService {
 	return &ConsumerReportService{
-		repository: repository,
+		repository:  repository,
+		perspective: perspectiveAPIClient,
 	}
 }
 
@@ -57,5 +60,15 @@ func (crs *ConsumerReportService) Create(msg contracts.CreateReportMessage) erro
 		CreatedAt:  createdAt,
 	}
 
-	return crs.repository.InsertIfNotExists(&report)
+	crs.repository.InsertIfNotExists(&report)
+
+	resp, err := crs.perspective.AnalyzePost(&msg.Body)
+
+	if err != nil {
+		return errors.New("Error processing content analysis")
+	}
+
+	fmt.Println(resp)
+
+	return nil
 }

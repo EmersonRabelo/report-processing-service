@@ -13,6 +13,7 @@ type SettingProvider interface {
 	GetServer() Server
 	GetDatabase() Database
 	GetBroker() Broker
+	GetPerspectiveClient() PerspectiveAPIClient
 	IsProd() bool
 	IsTest() bool
 	IsLocal() bool
@@ -39,10 +40,16 @@ type Broker struct {
 }
 
 type Setting struct {
-	Environment string
-	Server      Server
-	Database    Database
-	Broker      Broker
+	Environment          string
+	Server               Server
+	Database             Database
+	Broker               Broker
+	PerspectiveAPIClient PerspectiveAPIClient
+}
+
+type PerspectiveAPIClient struct {
+	URL   string
+	TOKEN string
 }
 
 var AppSetting SettingProvider
@@ -85,6 +92,10 @@ func loadSetting() *Setting {
 			User:     getEnvOrDefault("AMQP_USER", "guest"),
 			Password: getEnvOrDefault("AMQP_PASSWORD", "guest"),
 		},
+		PerspectiveAPIClient: PerspectiveAPIClient{
+			URL:   getEnvOrDefault("GOOGLE_PERSPECTIVE_API_BASE_URL", "https://commentanalyzer.googleapis.com/v1alpha1/comments:analyze"),
+			TOKEN: getEnvOrDefault("GOOGLE_PERSPECTIVE_API_TOKEN", ""),
+		},
 	}
 }
 
@@ -96,10 +107,11 @@ func getEnvOrDefault(key, def string) string {
 	return val
 }
 
-func (s *Setting) GetEnvironment() string { return s.Environment }
-func (s *Setting) GetServer() Server      { return s.Server }
-func (s *Setting) GetDatabase() Database  { return s.Database }
-func (s *Setting) GetBroker() Broker      { return s.Broker }
-func (s *Setting) IsProd() bool           { return s.Environment == "production" }
-func (s *Setting) IsTest() bool           { return s.Environment == "test" }
-func (s *Setting) IsLocal() bool          { return s.Environment == "local" || s.Environment == "development" }
+func (s *Setting) GetEnvironment() string                     { return s.Environment }
+func (s *Setting) GetServer() Server                          { return s.Server }
+func (s *Setting) GetDatabase() Database                      { return s.Database }
+func (s *Setting) GetBroker() Broker                          { return s.Broker }
+func (s *Setting) GetPerspectiveClient() PerspectiveAPIClient { return s.PerspectiveAPIClient }
+func (s *Setting) IsProd() bool                               { return s.Environment == "production" }
+func (s *Setting) IsTest() bool                               { return s.Environment == "test" }
+func (s *Setting) IsLocal() bool                              { return s.Environment == "local" || s.Environment == "development" }

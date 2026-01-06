@@ -95,7 +95,7 @@ func (consumer *ReportConsumer) Start() error {
 			if errors.Is(err, handler.ErrPermanent) || errors.Is(err, service.ErrInvalidMessage) {
 				_ = delivey.Ack(false)
 			} else {
-				_ = delivey.Nack(false, true)
+				_ = delivey.Nack(false, true) // TOMAR CUIDADO!!! CAI EM UM ERRO DE RETRY DA MENSAGENS, CASO OCORRA ALGUM ERRO NO HANDLER, SERIA BOM UM RATE LIMIT
 			}
 			continue
 		}

@@ -38,7 +38,8 @@ func main() {
 	defer conn.Close()
 
 	exchange := "topic_report"
-	routingKey := "post.report.created"
+	routingKeyConsumer := "post.report.created"
+	routingKeyResponse := "post.report.response"
 	queueName := "q.report.created"
 
 	perspectiveClientConfig := setting.GetPerspectiveClient()
@@ -48,13 +49,13 @@ func main() {
 
 	perspectiveAPIClient := perspective.NewPerspectiveAPIClient(apiURL)
 	repo := repository.NewReportRepository(db)
-	producer := producer.NewReportAnalysisProducer(channel, exchange, routingKey)
+	producer := producer.NewReportAnalysisProducer(channel, exchange, routingKeyResponse)
 
 	svc := service.NewConsumerReportService(repo, perspectiveAPIClient, *producer)
 
 	handler := handler.NewReportHandler(svc)
 
-	consumer := consumer.NewReportConsumer(channel, exchange, routingKey, queueName, handler)
+	consumer := consumer.NewReportConsumer(channel, exchange, routingKeyConsumer, queueName, handler)
 
 	if err := consumer.Start(); err != nil {
 		log.Fatal(err)

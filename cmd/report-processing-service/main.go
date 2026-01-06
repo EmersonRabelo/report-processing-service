@@ -9,6 +9,7 @@ import (
 	database "github.com/EmersonRabelo/report-processing-service/internal/database"
 	"github.com/EmersonRabelo/report-processing-service/internal/handler"
 	consumer "github.com/EmersonRabelo/report-processing-service/internal/queue/consumer"
+	producer "github.com/EmersonRabelo/report-processing-service/internal/queue/producer"
 	"github.com/EmersonRabelo/report-processing-service/internal/repository"
 	"github.com/EmersonRabelo/report-processing-service/internal/service"
 	router "github.com/EmersonRabelo/report-processing-service/router"
@@ -44,10 +45,13 @@ func main() {
 	apiToken := perspectiveClientConfig.TOKEN
 	apiBaseURL := perspectiveClientConfig.URL
 	apiURL := fmt.Sprintf("%s?key=%s", apiBaseURL, apiToken)
-	perspectiveAPIClient := perspective.NewPerspectiveAPIClient(apiURL)
 
+	perspectiveAPIClient := perspective.NewPerspectiveAPIClient(apiURL)
 	repo := repository.NewReportRepository(db)
-	svc := service.NewConsumerReportService(repo, perspectiveAPIClient)
+	producer := producer.NewReportAnalysisProducer(channel, exchange, routingKey)
+
+	svc := service.NewConsumerReportService(repo, perspectiveAPIClient, *producer)
+
 	handler := handler.NewReportHandler(svc)
 
 	consumer := consumer.NewReportConsumer(channel, exchange, routingKey, queueName, handler)

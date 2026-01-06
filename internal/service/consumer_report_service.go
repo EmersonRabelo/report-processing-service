@@ -8,6 +8,7 @@ import (
 	"github.com/EmersonRabelo/report-processing-service/internal/api/perspective"
 	contracts "github.com/EmersonRabelo/report-processing-service/internal/dto/report/contracts"
 	"github.com/EmersonRabelo/report-processing-service/internal/entity"
+	"github.com/EmersonRabelo/report-processing-service/internal/queue/producer"
 	"github.com/google/uuid"
 )
 
@@ -20,12 +21,14 @@ type ReportRepository interface {
 type ConsumerReportService struct {
 	repository  ReportRepository
 	perspective perspective.PerspectiveAPIClient
+	producer    producer.ReportAnalysisProducer
 }
 
-func NewConsumerReportService(repository ReportRepository, perspectiveAPIClient perspective.PerspectiveAPIClient) *ConsumerReportService {
+func NewConsumerReportService(repository ReportRepository, perspectiveAPIClient perspective.PerspectiveAPIClient, producer producer.ReportAnalysisProducer) *ConsumerReportService {
 	return &ConsumerReportService{
 		repository:  repository,
 		perspective: perspectiveAPIClient,
+		producer:    producer,
 	}
 }
 

@@ -39,24 +39,24 @@ func NewPerspectiveAPIClient(baseURL string) PerspectiveAPIClient {
 }
 
 func (client *perspectiveAPIClient) AnalyzePost(body *string) (dto.PerspectiveAPIResponse, error) {
-	type Comment struct {
-		Text string `json:"text"`
-	}
-	type CommentPayload struct {
-		Comment             Comment             `json:"comment"`
-		RequestedAttributes map[string]struct{} `json:"requestedAttributes"`
-	}
 
 	comment := Comment{
 		Text: *body,
 	}
 	requestedAttributes := map[string]struct{}{
-		"TOXICITY": {},
+		"TOXICITY":        {},
+		"SEVERE_TOXICITY": {},
+		"IDENTITY_ATTACK": {},
+		"INSULT":          {},
+		"PROFANITY":       {},
+		"THREAT":          {},
 	}
+
 	data := CommentPayload{
 		Comment:             comment,
 		RequestedAttributes: requestedAttributes,
 	}
+
 	buf, err := json.Marshal(data)
 	if err != nil {
 		return dto.PerspectiveAPIResponse{}, err

@@ -17,7 +17,12 @@ type Attribute struct {
 }
 
 type AttributeScores struct {
-	Toxicity Attribute `json:"TOXICITY"`
+	Toxicity       Attribute `json:"TOXICITY"`
+	SevereToxicity Attribute `json:"SEVERE_TOXICITY"`
+	IdentityAttack Attribute `json:"IDENTITY_ATTACK"`
+	Insult         Attribute `json:"INSULT"`
+	Profanity      Attribute `json:"PROFANITY"`
+	Threat         Attribute `json:"THREAT"`
 }
 
 type PerspectiveAPIResponse struct {

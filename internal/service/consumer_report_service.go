@@ -9,6 +9,7 @@ import (
 	contracts "github.com/EmersonRabelo/report-processing-service/internal/dto/report/contracts"
 	"github.com/EmersonRabelo/report-processing-service/internal/entity"
 	"github.com/EmersonRabelo/report-processing-service/internal/queue/producer"
+	"github.com/EmersonRabelo/report-processing-service/internal/repository"
 	"github.com/google/uuid"
 )
 
@@ -19,12 +20,12 @@ type ReportRepository interface {
 }
 
 type ConsumerReportService struct {
-	repository  ReportRepository
+	repository  repository.ReportRepository
 	perspective perspective.PerspectiveAPIClient
 	producer    producer.ReportAnalysisProducer
 }
 
-func NewConsumerReportService(repository ReportRepository, perspectiveAPIClient perspective.PerspectiveAPIClient, producer producer.ReportAnalysisProducer) *ConsumerReportService {
+func NewConsumerReportService(repository repository.ReportRepository, perspectiveAPIClient perspective.PerspectiveAPIClient, producer producer.ReportAnalysisProducer) *ConsumerReportService {
 	return &ConsumerReportService{
 		repository:  repository,
 		perspective: perspectiveAPIClient,
@@ -63,7 +64,9 @@ func (crs *ConsumerReportService) Create(msg contracts.CreateReportMessage) erro
 		CreatedAt:  createdAt,
 	}
 
-	crs.repository.InsertIfNotExists(&report)
+	if err := crs.repository.InsertIfNotExists(&report); err != nil {
+		return errors.New("Error persist the report")
+	}
 
 	resp, err := crs.perspective.AnalyzePost(&msg.Body)
 
@@ -71,7 +74,69 @@ func (crs *ConsumerReportService) Create(msg contracts.CreateReportMessage) erro
 		return errors.New("Error processing content analysis")
 	}
 
-	fmt.Println(resp)
+	for attribute, score := range map[string]float64{
+		"TOXICITY":        resp.AttributeScores.Toxicity.SummaryScore.Value,
+		"SEVERE_TOXICITY": resp.AttributeScores.SevereToxicity.SummaryScore.Value,
+		"IDENTITY_ATTACK": resp.AttributeScores.IdentityAttack.SummaryScore.Value,
+		"INSULT":          resp.AttributeScores.Insult.SummaryScore.Value,
+		"PROFANITY":       resp.AttributeScores.Profanity.SummaryScore.Value,
+		"THREAT":          resp.AttributeScores.Threat.SummaryScore.Value,
+	} {
+		switch attribute {
+		case "TOXICITY":
+			report.PerspectiveToxicity = ptr(score)
+		case "SEVERE_TOXICITY":
+			report.PerspectiveToxicity = ptr(score)
+		case "IDENTITY_ATTACK":
+			report.PerspectiveIdentityHate = ptr(score)
+		case "INSULT":
+			report.PerspectiveInsult = ptr(score)
+		case "PROFANITY":
+			report.PerspectiveProfanity = ptr(score)
+		case "THREAT":
+			report.PerspectiveThreat = ptr(score)
+
+		}
+	}
+
+	if len(resp.DetectedLanguages) > 0 {
+		report.PerspectiveLanguage = &resp.DetectedLanguages[0]
+	}
+
+	now := time.Now()
+
+	report.UpdatedAt = now
+	report.PerspectiveResponseAt = &now
+	report.Status = entity.StatusDone
+
+	if err := crs.repository.Update(&report); err != nil {
+		return errors.New("Error persist content analysis")
+	}
+
+	reportAnalysisMessage := ToReportAnalysisResultMessage(report)
+
+	if err := crs.producer.Publish(&reportAnalysisMessage); err != nil {
+		return errors.New("Error publish analysis menssage")
+	}
+
+	fmt.Println("Tudo Certo!!!")
+	fmt.Printf("Message: %+v\n", reportAnalysisMessage)
 
 	return nil
 }
+
+func ToReportAnalysisResultMessage(r entity.Report) contracts.ReportAnalysisResultMessage {
+	return contracts.ReportAnalysisResultMessage{
+		ReportId:     r.Id,
+		Toxicity:     r.PerspectiveToxicity,
+		Insult:       r.PerspectiveInsult,
+		Profanity:    r.PerspectiveProfanity,
+		Threat:       r.PerspectiveThreat,
+		IdentityHate: r.PerspectiveIdentityHate,
+		Language:     r.PerspectiveLanguage,
+		AnalyzedAt:   r.PerspectiveResponseAt,
+	}
+}
+
+// Fora idiomática, posso não receber os valores corretamente. Então checo e preencho os valores.
+func ptr[T any](v T) *T { return &v }

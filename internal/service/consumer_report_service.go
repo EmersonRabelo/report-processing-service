@@ -119,9 +119,6 @@ func (crs *ConsumerReportService) Create(msg contracts.CreateReportMessage) erro
 		return errors.New("Error publish analysis menssage")
 	}
 
-	fmt.Println("Tudo Certo!!!")
-	fmt.Printf("Message: %+v\n", reportAnalysisMessage)
-
 	return nil
 }
 

@@ -86,9 +86,9 @@ func (crs *ConsumerReportService) Create(msg contracts.CreateReportMessage) erro
 		case "TOXICITY":
 			report.PerspectiveToxicity = ptr(score)
 		case "SEVERE_TOXICITY":
-			report.PerspectiveToxicity = ptr(score)
+			report.PerspectiveSevereToxicity = ptr(score)
 		case "IDENTITY_ATTACK":
-			report.PerspectiveIdentityHate = ptr(score)
+			report.PerspectiveIdentityAttack = ptr(score)
 		case "INSULT":
 			report.PerspectiveInsult = ptr(score)
 		case "PROFANITY":
@@ -127,14 +127,15 @@ func (crs *ConsumerReportService) Create(msg contracts.CreateReportMessage) erro
 
 func ToReportAnalysisResultMessage(r entity.Report) contracts.ReportAnalysisResultMessage {
 	return contracts.ReportAnalysisResultMessage{
-		ReportId:     r.Id,
-		Toxicity:     r.PerspectiveToxicity,
-		Insult:       r.PerspectiveInsult,
-		Profanity:    r.PerspectiveProfanity,
-		Threat:       r.PerspectiveThreat,
-		IdentityHate: r.PerspectiveIdentityHate,
-		Language:     r.PerspectiveLanguage,
-		AnalyzedAt:   r.PerspectiveResponseAt,
+		ReportId:       r.Id,
+		Toxicity:       r.PerspectiveToxicity,
+		SevereToxicity: r.PerspectiveSevereToxicity,
+		IdentityAttack: r.PerspectiveIdentityAttack,
+		Insult:         r.PerspectiveInsult,
+		Profanity:      r.PerspectiveProfanity,
+		Threat:         r.PerspectiveThreat,
+		Language:       r.PerspectiveLanguage,
+		AnalyzedAt:     r.PerspectiveResponseAt,
 	}
 }
 

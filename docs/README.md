@@ -1,16 +1,20 @@
+
 # Documentação — Report Processing Service
 
-Este diretório contém a documentação do projeto organizada por tema.
+Documentação organizada e padronizada. Comece pelo guia principal:
 
-- [overview.md](overview.md) — Visão geral e fluxo de processamento.
-- [architecture.md](architecture.md) — Arquitetura e componentes.
-- [setup.md](setup.md) — Como instalar, configurar e executar localmente.
-- [configuration.md](configuration.md) — Variáveis de ambiente usadas pelo sistema.
-- [database.md](database.md) — Migrations e instruções de banco de dados.
-- [api.md](api.md) — Contratos de mensagem e integrações externas.
-- [development.md](development.md) — Como desenvolver, executar e testar.
-- [deployment.md](deployment.md) — Orientações de deploy e containers.
-- [CONTRIBUTING.md](CONTRIBUTING.md) — Diretrizes para contribuir.
-- [GLOSSARY.md](GLOSSARY.md) — Glossário de termos do domínio.
+- **Guia do Projeto:** [PROJECT_GUIDE.md](PROJECT_GUIDE.md) — documento unificado com visão, arquitetura, dados, filas, contratos e procedimentos.
+- **Mapa e Estrutura:** [STRUCTURE.md](STRUCTURE.md) — mapa de pastas e arquivos chave.
+- Outros documentos:
+	- [architecture.md](architecture.md)
+	- [overview.md](overview.md)
+	- [setup.md](setup.md)
+	- [configuration.md](configuration.md)
+	- [database.md](database.md)
+	- [api.md](api.md)
+	- [development.md](development.md)
+	- [deployment.md](deployment.md)
+	- [CONTRIBUTING.md](CONTRIBUTING.md)
+	- [GLOSSARY.md](GLOSSARY.md)
 
-Abra o arquivo relevante para um guia detalhado.
+Abra `[PROJECT_GUIDE.md](PROJECT_GUIDE.md)` para a documentação padronizada completa.

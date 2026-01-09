@@ -15,6 +15,7 @@ import (
 	router "github.com/EmersonRabelo/report-processing-service/router"
 )
 
+var Version = ""
 var setting config.SettingProvider
 
 func init() {
@@ -57,9 +58,12 @@ func main() {
 
 	consumer := consumer.NewReportConsumer(channel, exchange, routingKeyConsumer, queueName, handler)
 
-	if err := consumer.Start(); err != nil {
-		log.Fatal(err)
-	}
+	go func() {
+		if err := consumer.Start(); err != nil {
+			log.Fatal(err)
+		}
+
+	}()
 
 	r := router.SetupRouter()
 
@@ -69,5 +73,5 @@ func main() {
 		log.Fatal("Falha ao iniciar servidor:", err)
 	}
 
-	fmt.Println("Initialized.")
+	fmt.Println("Initialized, version: ", Version)
 }

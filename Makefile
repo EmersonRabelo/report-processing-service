@@ -7,3 +7,9 @@ build:
 clean:
 	@go clean ./..
 	@rm -rf build/
+
+help:
+	@echo "Makefile commands:"
+	@echo "  build    - Build the report processing service binary"
+	@echo "  clean    - Clean up build artifacts"
+	@echo "  help     - Show this help message"
